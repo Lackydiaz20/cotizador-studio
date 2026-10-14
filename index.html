@@ -13,6 +13,7 @@
         button { width: 100%; padding: 14px; margin-top: 20px; background: #c084fc; color: #000; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; }
         .resultado { font-size: 1.3em; font-weight: bold; color: #4ade80; margin-top: 16px; text-align: center; }
         .expirado { text-align: center; color: #ef4444; padding: 40px 20px; }
+        .nota { font-size: 0.75em; color: #888; margin-top: 6px; }
     </style>
 </head>
 <body>
@@ -20,7 +21,7 @@
 <div id="contenido">
     <div class="card">
         <h2>Parámetros del Tatuaje</h2>
-
+        
         <label>Estilo del proyecto</label>
         <select id="estilo" onchange="calcular()">
             <option value="1.2">Fine Line / Minimalista</option>
@@ -49,12 +50,13 @@
 
         <label>Subir Referencia o Foto de la Zona</label>
         <input type="file" id="fotoRef" accept="image/*" style="padding: 8px;">
+        <div class="nota">Sube tu foto para tenerla lista y adjúntala en el chat de WhatsApp que se abrirá a continuación.</div>
     </div>
 
     <div class="card" style="text-align: center;">
         <span style="font-size: 0.9em; color: #aaa;">Inversión Estimada</span>
         <div id="salida" class="resultado">S/ 151 - S/ 193</div>
-        <button onclick="enviarWhatsApp()">Enviar Cotización al Estudio</button>
+        <button onclick="enviarWhatsApp()">Enviar Cotización y Foto al Estudio</button>
     </div>
 </div>
 
@@ -66,7 +68,7 @@
         try {
             const data = JSON.parse(atob(token));
             if (Date.now() > data.exp) {
-                document.getElementById("contenido").innerHTML =
+                document.getElementById("contenido").innerHTML = 
                     "<div class='card expirado'><h2>Enlace Expirado</h2><p>Este enlace temporal de 24 horas ha caducado. Solicita uno nuevo al estudio.</p></div>";
             }
         } catch(e) {}
@@ -78,12 +80,12 @@
         const zona = parseFloat(document.getElementById("zona").value);
         const alto = parseFloat(document.getElementById("alto").value) || 0;
         const ancho = parseFloat(document.getElementById("ancho").value) || 0;
-
+        
         const area = alto * ancho;
         const estimado = Math.round(baseMinima + (area * estilo * zona));
         const min = Math.round(estimado * 0.9);
         const max = Math.round(estimado * 1.15);
-
+        
         document.getElementById("salida").innerText = `S/ ${min} - S/ ${max}`;
     }
 
@@ -93,11 +95,13 @@
         const alto = document.getElementById("alto").value;
         const ancho = document.getElementById("ancho").value;
         const precio = document.getElementById("salida").innerText;
-
-        const mensaje = `Hola! Coticé en su enlace temporal:\n- Estilo: ${estiloTexto}\n- Zona: ${zonaTexto}\n- Medidas: ${alto}x${ancho} cm\n- Estimado: ${precio}\nAdjunto mi referencia para agendar.`;
-
-        // Aquí puedes cambiar por tu número de WhatsApp de estudio (ej: 51900000000)
-        window.open(`https://wa.me/?text=${encodeURIComponent(mensaje)}`, '_blank');
+        
+        // Número de WhatsApp de tu estudio (puedes cambiarlo por tu número con código de país, ej: 51900000000)
+        const numeroEstudio = ""; 
+        
+        const mensaje = `Hola! Coticé en su enlace temporal:\n- Estilo: ${estiloTexto}\n- Zona: ${zonaTexto}\n- Medidas: ${alto}x${ancho} cm\n- Estimado: ${precio}\n\n*Adjunto aquí la foto de mi referencia/zona para agendar:*`;
+        
+        window.open(`https://wa.me/${numeroEstudio}?text=${encodeURIComponent(mensaje)}`, '_blank');
     }
 
     calcular();
