@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cotizador de Tatuajes - Studio</title>
+    <style>
+        body { font-family: system-ui, sans-serif; background: #0f0f0f; color: #f0f0f0; padding: 20px; max-width: 480px; margin: auto; }
+        .card { background: #1a1a1a; padding: 20px; border-radius: 12px; margin-bottom: 16px; border: 1px solid #2a2a2a; }
+        h2 { margin-top: 0; color: #ffffff; font-size: 1.2em; }
+        label { display: block; margin-top: 12px; font-size: 0.85em; color: #aaa; }
+        select, input { width: 100%; padding: 12px; margin-top: 6px; background: #262626; border: 1px solid #3a3a3a; color: #fff; border-radius: 8px; box-sizing: border-box; }
+        button { width: 100%; padding: 14px; margin-top: 20px; background: #c084fc; color: #000; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; }
+        .resultado { font-size: 1.3em; font-weight: bold; color: #4ade80; margin-top: 16px; text-align: center; }
+        .expirado { text-align: center; color: #ef4444; padding: 40px 20px; }
+    </style>
+</head>
+<body>
+
+<div id="contenido">
+    <div class="card">
+        <h2>Parámetros del Tatuaje</h2>
+
+        <label>Estilo del proyecto</label>
+        <select id="estilo" onchange="calcular()">
+            <option value="1.2">Fine Line / Minimalista</option>
+            <option value="1.5">Blackwork / Puntillismo</option>
+            <option value="1.8">Anime / Neotradicional</option>
+            <option value="2.2">Realismo Black & Grey</option>
+        </select>
+
+        <label>Zona del cuerpo</label>
+        <select id="zona" onchange="calcular()">
+            <option value="1.0">Brazo / Antebrazo / Pierna</option>
+            <option value="1.15">Hombro / Espalda / Pecho</option>
+            <option value="1.35">Costillas / Cuello / Manos</option>
+        </select>
+
+        <div style="display: flex; gap: 8px;">
+            <div style="flex:1;">
+                <label>Alto (cm)</label>
+                <input type="number" id="alto" value="10" min="1" oninput="calcular()">
+            </div>
+            <div style="flex:1;">
+                <label>Ancho (cm)</label>
+                <input type="number" id="ancho" value="8" min="1" oninput="calcular()">
+            </div>
+        </div>
+
+        <label>Subir Referencia o Foto de la Zona</label>
+        <input type="file" id="fotoRef" accept="image/*" style="padding: 8px;">
+    </div>
+
+    <div class="card" style="text-align: center;">
+        <span style="font-size: 0.9em; color: #aaa;">Inversión Estimada</span>
+        <div id="salida" class="resultado">S/ 151 - S/ 193</div>
+        <button onclick="enviarWhatsApp()">Enviar Cotización al Estudio</button>
+    </div>
+</div>
+
+<script>
+    // Validación de caducidad 24 horas del enlace
+    const params = new URLSearchParams(window.location.search);
+    const token = params.get("t");
+    if (token) {
+        try {
+            const data = JSON.parse(atob(token));
+            if (Date.now() > data.exp) {
+                document.getElementById("contenido").innerHTML =
+                    "<div class='card expirado'><h2>Enlace Expirado</h2><p>Este enlace temporal de 24 horas ha caducado. Solicita uno nuevo al estudio.</p></div>";
+            }
+        } catch(e) {}
+    }
+
+    function calcular() {
+        const baseMinima = 120;
+        const estilo = parseFloat(document.getElementById("estilo").value);
+        const zona = parseFloat(document.getElementById("zona").value);
+        const alto = parseFloat(document.getElementById("alto").value) || 0;
+        const ancho = parseFloat(document.getElementById("ancho").value) || 0;
+
+        const area = alto * ancho;
+        const estimado = Math.round(baseMinima + (area * estilo * zona));
+        const min = Math.round(estimado * 0.9);
+        const max = Math.round(estimado * 1.15);
+
+        document.getElementById("salida").innerText = `S/ ${min} - S/ ${max}`;
+    }
+
+    function enviarWhatsApp() {
+        const estiloTexto = document.getElementById("estilo").selectedOptions[0].text;
+        const zonaTexto = document.getElementById("zona").selectedOptions[0].text;
+        const alto = document.getElementById("alto").value;
+        const ancho = document.getElementById("ancho").value;
+        const precio = document.getElementById("salida").innerText;
+
+        const mensaje = `Hola! Coticé en su enlace temporal:\n- Estilo: ${estiloTexto}\n- Zona: ${zonaTexto}\n- Medidas: ${alto}x${ancho} cm\n- Estimado: ${precio}\nAdjunto mi referencia para agendar.`;
+
+        // Aquí puedes cambiar por tu número de WhatsApp de estudio (ej: 51900000000)
+        window.open(`https://wa.me/?text=${encodeURIComponent(mensaje)}`, '_blank');
+    }
+
+    calcular();
+</script>
+</body>
+</html>
